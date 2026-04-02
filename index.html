@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Egbo — Data Analyst</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── CSS Variables ─────────────────────────────────── */
+    :root {
+      --bg:        #0d0d0d;
+      --surface:   #141414;
+      --border:    #252525;
+      --amber:     #f0a500;
+      --amber-dim: #7a5200;
+      --text:      #e8e2d9;
+      --muted:     #6b6560;
+      --white:     #ffffff;
+      --mono:      'JetBrains Mono', monospace;
+      --serif:     'DM Serif Display', serif;
+      --sans:      'Syne', sans-serif;
+    }
+
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ─── Scrollbar ──────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--amber-dim); border-radius: 2px; }
+
+    /* ─── Noise overlay ──────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ─── Nav ────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 3rem;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(12px);
+      border-color: var(--border);
+    }
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--amber);
+      letter-spacing: 0.08em;
+    }
+    .nav-logo span { color: var(--muted); }
+    .nav-links {
+      display: flex; gap: 2.5rem; list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--amber); }
+
+    /* ─── Hero ───────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-left {
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 0 3rem 5rem 3rem;
+    }
+    .hero-tag {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+      color: var(--amber);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.3s forwards;
+    }
+    .hero-name {
+      font-family: var(--serif);
+      font-size: clamp(3.5rem, 7vw, 7rem);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.5s forwards;
+    }
+    .hero-name em {
+      font-style: italic;
+      color: var(--amber);
+    }
+    .hero-title {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      letter-spacing: 0.05em;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.7s forwards;
+    }
+    .hero-cta {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.9s forwards;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.75rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--amber);
+      color: var(--amber);
+      background: transparent;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn:hover { background: var(--amber); color: var(--bg); }
+    .btn-ghost { border-color: var(--border); color: var(--muted); }
+    .btn-ghost:hover { background: var(--border); color: var(--text); }
+
+    .hero-right {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.4;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    }
+    .hero-chart {
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeIn 1.2s 1s forwards;
+    }
+    .hero-chart svg { width: 360px; height: 260px; }
+
+    /* ─── Scroll indicator ───────────────────────────────── */
+    .scroll-hint {
+      position: absolute; bottom: 2.5rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+      letter-spacing: 0.15em; text-transform: uppercase;
+      opacity: 0; animation: fadeIn 1s 1.4s forwards;
+    }
+    .scroll-hint::after {
+      content: '';
+      width: 1px; height: 40px;
+      background: linear-gradient(to bottom, var(--amber), transparent);
+      animation: pulse 2s infinite;
+    }
+
+    /* ─── Sections ───────────────────────────────────────── */
+    section { padding: 7rem 3rem; max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      color: var(--amber);
+      text-transform: uppercase;
+      margin-bottom: 3.5rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1; height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+
+    /* ─── About ──────────────────────────────────────────── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 5rem;
+      align-items: start;
+    }
+    .about-text h2 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+    }
+    .about-text h2 em { font-style: italic; color: var(--amber); }
+    .about-text p {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+    .about-stats {
+      display: flex; flex-direction: column; gap: 1.5rem;
+      padding-top: 0.5rem;
+    }
+    .stat-item {
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-item::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--amber);
+    }
+    .stat-num {
+      font-family: var(--serif);
+      font-size: 2.8rem;
+      color: var(--amber);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ─── Skills ─────────────────────────────────────────── */
+    #skills { background: var(--surface); max-width: 100%; }
+    #skills > .inner { max-width: 1200px; margin: 0 auto; padding: 7rem 3rem; }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+    .skill-card {
+      background: var(--surface);
+      padding: 2.5rem;
+      transition: background 0.2s;
+    }
+    .skill-card:hover { background: #1a1a1a; }
+    .skill-icon {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .skill-card h3 {
+      font-family: var(--sans);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+    .skill-tags {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      margin-top: 1rem;
+    }
+    .tag {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    .tag.highlight { border-color: var(--amber-dim); color: var(--amber); }
+
+    /* ─── Projects ───────────────────────────────────────── */
+    .projects-list {
+      display: flex; flex-direction: column; gap: 1px;
+      background: var(--border);
+    }
+    .project-row {
+      display: grid;
+      grid-template-columns: 3rem 1fr auto;
+      gap: 2rem;
+      align-items: center;
+      background: var(--bg);
+      padding: 2rem 2.5rem;
+      border-left: 2px solid transparent;
+      transition: background 0.2s, border-color 0.2s;
+      cursor: pointer;
+    }
+    .project-row:hover {
+      background: var(--surface);
+      border-left-color: var(--amber);
+    }
+    .project-num {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--amber-dim);
+      letter-spacing: 0.1em;
+    }
+    .project-info h3 {
+      font-family: var(--sans);
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+    .project-info p {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .project-meta {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;
+    }
+    .project-stack {
+      display: flex; gap: 0.4rem;
+    }
+    .project-link {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: var(--amber);
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .project-row:hover .project-link { opacity: 1; }
+
+    /* ─── Experience (Timeline) ──────────────────────────── */
+    #experience { background: var(--surface); max-width: 100%; }
+    #experience > .inner { max-width: 1200px; margin: 0 auto; padding: 7rem 3rem; }
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--amber), var(--border) 80%, transparent);
+    }
+    .timeline-item {
+      position: relative;
+      padding-left: 2.5rem;
+      padding-bottom: 3.5rem;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute; left: -2.35rem; top: 0.4rem;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 12px var(--amber);
+    }
+    .timeline-period {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--amber);
+      letter-spacing: 0.12em;
+      margin-bottom: 0.4rem;
+    }
+    .timeline-role {
+      font-family: var(--sans);
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    .timeline-org {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .timeline-desc {
+      font-size: 0.92rem;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 60ch;
+    }
+
+    /* ─── Contact ────────────────────────────────────────── */
+    #contact {
+      text-align: center;
+      padding: 9rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    #contact::before {
+      content: '';
+      position: absolute;
+      bottom: -200px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(240,165,0,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .contact-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      color: var(--amber);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    #contact h2 {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      margin-bottom: 1.5rem;
+    }
+    #contact h2 em { font-style: italic; color: var(--amber); }
+    #contact p {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 42ch;
+      margin: 0 auto 3rem;
+    }
+    .contact-links {
+      display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;
+    }
+
+    /* ─── Footer ─────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 3rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── Animations ─────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50%       { opacity: 1; }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to   { stroke-dashoffset: 0; }
+    }
+    @keyframes barGrow {
+      from { transform: scaleY(0); }
+      to   { transform: scaleY(1); }
+    }
+
+    /* ─── Reveal on scroll ───────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 1.25rem 1.5rem; }
+      .nav-links { display: none; }
+      #hero { grid-template-columns: 1fr; }
+      .hero-right { display: none; }
+      .hero-left { padding: 7rem 1.5rem 4rem; justify-content: flex-start; }
+      section { padding: 5rem 1.5rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .skills-grid { grid-template-columns: 1fr; }
+      .project-row { grid-template-columns: 2.5rem 1fr; }
+      .project-meta { display: none; }
+      footer { flex-direction: column; gap: 0.75rem; text-align: center; }
+      #skills > .inner, #experience > .inner { padding: 5rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Nav ───────────────────────────────────────────── -->
+  <nav id="navbar">
+    <div class="nav-logo"><span>//</span> egbo.dev</div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- ─── Hero ──────────────────────────────────────────── -->
+  <section id="hero" style="padding:0; max-width:100%; margin:0;">
+    <div class="hero-left">
+      <p class="hero-tag">// Data Analyst & Visualization Specialist</p>
+      <h1 class="hero-name">Turning <em>data</em><br>into decisions.</h1>
+      <p class="hero-title">Python · SQL · Power BI · Tableau · Machine Learning</p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn">View Projects</a>
+        <a href="#contact" class="btn btn-ghost">Get in Touch</a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="hero-grid-bg"></div>
+      <div class="hero-chart">
+        <!-- Animated SVG chart decoration -->
+        <svg viewBox="0 0 360 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Grid lines -->
+          <line x1="40" y1="20" x2="40" y2="220" stroke="#252525" stroke-width="1"/>
+          <line x1="40" y1="220" x2="340" y2="220" stroke="#252525" stroke-width="1"/>
+          <line x1="40" y1="170" x2="340" y2="170" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4 4"/>
+          <line x1="40" y1="120" x2="340" y2="120" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4 4"/>
+          <line x1="40" y1="70"  x2="340" y2="70"  stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4 4"/>
+
+          <!-- Bars -->
+          <g style="transform-origin: bottom; animation: barGrow 0.6s 1.2s both;">
+            <rect x="60"  y="140" width="30" height="80" fill="#3a2800" rx="1"/>
+            <rect x="60"  y="140" width="30" height="80" fill="url(#barGrad)" rx="1"/>
+          </g>
+          <g style="transform-origin: bottom; animation: barGrow 0.6s 1.35s both;">
+            <rect x="110" y="90"  width="30" height="130" fill="#3a2800" rx="1"/>
+            <rect x="110" y="90"  width="30" height="130" fill="url(#barGrad)" rx="1"/>
+          </g>
+          <g style="transform-origin: bottom; animation: barGrow 0.6s 1.5s both;">
+            <rect x="160" y="110" width="30" height="110" fill="#3a2800" rx="1"/>
+            <rect x="160" y="110" width="30" height="110" fill="url(#barGrad)" rx="1"/>
+          </g>
+          <g style="transform-origin: bottom; animation: barGrow 0.6s 1.65s both;">
+            <rect x="210" y="60"  width="30" height="160" fill="#3a2800" rx="1"/>
+            <rect x="210" y="60"  width="30" height="160" fill="url(#barGrad)" rx="1"/>
+          </g>
+          <g style="transform-origin: bottom; animation: barGrow 0.6s 1.8s both;">
+            <rect x="260" y="80"  width="30" height="140" fill="#3a2800" rx="1"/>
+            <rect x="260" y="80"  width="30" height="140" fill="url(#barGrad)" rx="1"/>
+          </g>
+          <g style="transform-origin: bottom; animation: barGrow 0.6s 1.95s both;">
+            <rect x="310" y="40"  width="30" height="180" fill="#3a2800" rx="1"/>
+            <rect x="310" y="40"  width="30" height="180" fill="url(#barGrad)" rx="1"/>
+          </g>
+
+          <!-- Trend line -->
+          <polyline
+            points="75,140 125,90 175,110 225,60 275,80 325,40"
+            stroke="#f0a500"
+            stroke-width="2"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-dasharray="1000"
+            stroke-dashoffset="1000"
+            style="animation: drawLine 1.2s 2.2s forwards ease-out;"
+          />
+
+          <!-- Data points -->
+          <circle cx="75"  cy="140" r="4" fill="#f0a500" opacity="0" style="animation: fadeIn 0.3s 2.4s forwards;"/>
+          <circle cx="125" cy="90"  r="4" fill="#f0a500" opacity="0" style="animation: fadeIn 0.3s 2.5s forwards;"/>
+          <circle cx="175" cy="110" r="4" fill="#f0a500" opacity="0" style="animation: fadeIn 0.3s 2.6s forwards;"/>
+          <circle cx="225" cy="60"  r="4" fill="#f0a500" opacity="0" style="animation: fadeIn 0.3s 2.7s forwards;"/>
+          <circle cx="275" cy="80"  r="4" fill="#f0a500" opacity="0" style="animation: fadeIn 0.3s 2.8s forwards;"/>
+          <circle cx="325" cy="40"  r="4" fill="#f0a500" opacity="0" style="animation: fadeIn 0.3s 2.9s forwards;"/>
+
+          <!-- Axis labels -->
+          <text x="75"  y="235" font-family="JetBrains Mono,monospace" font-size="9" fill="#6b6560" text-anchor="middle">Q1</text>
+          <text x="125" y="235" font-family="JetBrains Mono,monospace" font-size="9" fill="#6b6560" text-anchor="middle">Q2</text>
+          <text x="175" y="235" font-family="JetBrains Mono,monospace" font-size="9" fill="#6b6560" text-anchor="middle">Q3</text>
+          <text x="225" y="235" font-family="JetBrains Mono,monospace" font-size="9" fill="#6b6560" text-anchor="middle">Q4</text>
+          <text x="275" y="235" font-family="JetBrains Mono,monospace" font-size="9" fill="#6b6560" text-anchor="middle">Q5</text>
+          <text x="325" y="235" font-family="JetBrains Mono,monospace" font-size="9" fill="#6b6560" text-anchor="middle">Q6</text>
+
+          <!-- Chart label -->
+          <text x="40" y="12" font-family="JetBrains Mono,monospace" font-size="8" fill="#7a5200" letter-spacing="2">GROWTH METRICS</text>
+
+          <!-- Gradient def -->
+          <defs>
+            <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f0a500" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#f0a500" stop-opacity="0.15"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+
+    <div class="scroll-hint">Scroll</div>
+  </section>
+
+  <!-- ─── About ─────────────────────────────────────────── -->
+  <section id="about">
+    <div class="section-label">01 — About</div>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <h2>Data-driven thinker with a <em>sharp eye</em> for insight.</h2>
+        <p>I'm a data analyst who bridges the gap between raw numbers and actionable business intelligence. I specialize in building clean data pipelines, crafting intuitive dashboards, and telling compelling stories through data.</p>
+        <p>My work spans exploratory analysis, predictive modeling, and reporting across diverse industries. I care deeply about clarity, reproducibility, and communicating findings that actually drive decisions.</p>
+        <div style="margin-top:2rem;">
+          <a href="#projects" class="btn">See My Work →</a>
+        </div>
+      </div>
+      <div class="about-stats reveal">
+        <div class="stat-item">
+          <div class="stat-num">15+</div>
+          <div class="stat-label">Projects Completed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">3+</div>
+          <div class="stat-label">Years of Experience</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">5</div>
+          <div class="stat-label">Core Technologies</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Skills ────────────────────────────────────────── -->
+  <div id="skills">
+    <div class="inner">
+      <div class="section-label">02 — Skills</div>
+      <div class="skills-grid">
+
+        <div class="skill-card reveal">
+          <div class="skill-icon">⬡</div>
+          <h3>Data Analysis</h3>
+          <p style="font-size:0.88rem; color:var(--muted); line-height:1.6;">Exploratory data analysis, statistical testing, pattern recognition, and hypothesis validation.</p>
+          <div class="skill-tags">
+            <span class="tag highlight">Python</span>
+            <span class="tag highlight">Pandas</span>
+            <span class="tag">NumPy</span>
+            <span class="tag">SciPy</span>
+          </div>
+        </div>
+
+        <div class="skill-card reveal">
+          <div class="skill-icon">◈</div>
+          <h3>Data Visualization</h3>
+          <p style="font-size:0.88rem; color:var(--muted); line-height:1.6;">Building interactive dashboards and compelling charts that communicate insight clearly.</p>
+          <div class="skill-tags">
+            <span class="tag highlight">Tableau</span>
+            <span class="tag highlight">Power BI</span>
+            <span class="tag">Matplotlib</span>
+            <span class="tag">Plotly</span>
+          </div>
+        </div>
+
+        <div class="skill-card reveal">
+          <div class="skill-icon">◉</div>
+          <h3>Database & SQL</h3>
+          <p style="font-size:0.88rem; color:var(--muted); line-height:1.6;">Complex queries, schema design, performance optimization, and data warehousing.</p>
+          <div class="skill-tags">
+            <span class="tag highlight">SQL</span>
+            <span class="tag">PostgreSQL</span>
+            <span class="tag">BigQuery</span>
+            <span class="tag">dbt</span>
+          </div>
+        </div>
+
+        <div class="skill-card reveal">
+          <div class="skill-icon">△</div>
+          <h3>Machine Learning</h3>
+          <p style="font-size:0.88rem; color:var(--muted); line-height:1.6;">Predictive modeling, classification, regression, and feature engineering for business use cases.</p>
+          <div class="skill-tags">
+            <span class="tag highlight">Scikit-learn</span>
+            <span class="tag">XGBoost</span>
+            <span class="tag">Regression</span>
+            <span class="tag">Clustering</span>
+          </div>
+        </div>
+
+        <div class="skill-card reveal">
+          <div class="skill-icon">▣</div>
+          <h3>Reporting & Storytelling</h3>
+          <p style="font-size:0.88rem; color:var(--muted); line-height:1.6;">Translating analytical findings into clear narratives for both technical and executive audiences.</p>
+          <div class="skill-tags">
+            <span class="tag highlight">Excel</span>
+            <span class="tag">Google Sheets</span>
+            <span class="tag">Jupyter</span>
+            <span class="tag">Notion</span>
+          </div>
+        </div>
+
+        <div class="skill-card reveal">
+          <div class="skill-icon">◎</div>
+          <h3>Data Engineering</h3>
+          <p style="font-size:0.88rem; color:var(--muted); line-height:1.6;">ETL pipelines, data cleaning, transformation workflows, and cloud-based data infrastructure.</p>
+          <div class="skill-tags">
+            <span class="tag highlight">Airflow</span>
+            <span class="tag">GCP</span>
+            <span class="tag">AWS S3</span>
+            <span class="tag">Git</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Projects ──────────────────────────────────────── -->
+  <section id="projects">
+    <div class="section-label">03 — Projects</div>
+    <div class="projects-list">
+
+      <div class="project-row reveal" onclick="window.open('#','_blank')">
+        <div class="project-num">01</div>
+        <div class="project-info">
+          <h3>Customer Churn Prediction Model</h3>
+          <p>Built an XGBoost classifier to predict customer churn with 91% accuracy, reducing retention spend by 23%.</p>
+        </div>
+        <div class="project-meta">
+          <div class="project-stack">
+            <span class="tag highlight">Python</span>
+            <span class="tag">XGBoost</span>
+            <span class="tag">SQL</span>
+          </div>
+          <span class="project-link">View →</span>
+        </div>
+      </div>
+
+      <div class="project-row reveal" onclick="window.open('#','_blank')">
+        <div class="project-num">02</div>
+        <div class="project-info">
+          <h3>Sales Performance Dashboard</h3>
+          <p>Interactive Power BI dashboard tracking KPIs across 12 regions with drill-down by product category and rep.</p>
+        </div>
+        <div class="project-meta">
+          <div class="project-stack">
+            <span class="tag highlight">Power BI</span>
+            <span class="tag">DAX</span>
+            <span class="tag">SQL</span>
+          </div>
+          <span class="project-link">View →</span>
+        </div>
+      </div>
+
+      <div class="project-row reveal" onclick="window.open('#','_blank')">
+        <div class="project-num">03</div>
+        <div class="project-info">
+          <h3>E-Commerce Funnel Analysis</h3>
+          <p>End-to-end funnel analysis identifying a 34% drop-off at checkout, leading to a $180K revenue recovery initiative.</p>
+        </div>
+        <div class="project-meta">
+          <div class="project-stack">
+            <span class="tag highlight">Python</span>
+            <span class="tag">BigQuery</span>
+            <span class="tag">Tableau</span>
+          </div>
+          <span class="project-link">View →</span>
+        </div>
+      </div>
+
+      <div class="project-row reveal" onclick="window.open('#','_blank')">
+        <div class="project-num">04</div>
+        <div class="project-info">
+          <h3>Supply Chain Optimization Report</h3>
+          <p>Analyzed inventory turnover and supplier lead times across 200+ SKUs using clustering to flag high-risk items.</p>
+        </div>
+        <div class="project-meta">
+          <div class="project-stack">
+            <span class="tag highlight">Pandas</span>
+            <span class="tag">K-Means</span>
+            <span class="tag">Excel</span>
+          </div>
+          <span class="project-link">View →</span>
+        </div>
+      </div>
+
+      <div class="project-row reveal" onclick="window.open('#','_blank')">
+        <div class="project-num">05</div>
+        <div class="project-info">
+          <h3>NLP Sentiment Analysis — Product Reviews</h3>
+          <p>Automated tagging of 50K+ reviews by sentiment and topic cluster, surfacing actionable product feedback themes.</p>
+        </div>
+        <div class="project-meta">
+          <div class="project-stack">
+            <span class="tag highlight">spaCy</span>
+            <span class="tag">NLTK</span>
+            <span class="tag">Plotly</span>
+          </div>
+          <span class="project-link">View →</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── Experience ────────────────────────────────────── -->
+  <div id="experience">
+    <div class="inner">
+      <div class="section-label">04 — Experience</div>
+      <div class="timeline">
+
+        <div class="timeline-item reveal">
+          <div class="timeline-period">2023 — Present</div>
+          <div class="timeline-role">Senior Data Analyst</div>
+          <div class="timeline-org">Company Name · Full-time</div>
+          <div class="timeline-desc">Leading analytics for a product portfolio serving 2M+ users. Own the full data pipeline from ingestion to executive reporting. Partner closely with product, marketing, and engineering to drive A/B test design and interpretation.</div>
+        </div>
+
+        <div class="timeline-item reveal">
+          <div class="timeline-period">2021 — 2023</div>
+          <div class="timeline-role">Data Analyst</div>
+          <div class="timeline-org">Company Name · Full-time</div>
+          <div class="timeline-desc">Built and maintained core business dashboards in Tableau and Power BI. Developed automated reporting workflows that saved 12+ hours of manual work per week. Contributed to the data warehouse migration to BigQuery.</div>
+        </div>
+
+        <div class="timeline-item reveal">
+          <div class="timeline-period">2020 — 2021</div>
+          <div class="timeline-role">Business Intelligence Intern</div>
+          <div class="timeline-org">Company Name · Internship</div>
+          <div class="timeline-desc">Supported senior analysts with ad-hoc analysis, data cleaning, and report generation. Built first production Python ETL script to automate a weekly CRM export process.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Contact ───────────────────────────────────────── -->
+  <section id="contact" style="max-width:100%; padding-left:0; padding-right:0;">
+    <div class="contact-eyebrow">05 — Contact</div>
+    <h2>Let's work <em>together.</em></h2>
+    <p>Open to full-time roles, freelance projects, and collaborative opportunities in data analytics.</p>
+    <div class="contact-links">
+      <a href="mailto:your@email.com" class="btn">Email Me</a>
+      <a href="https://linkedin.com/in/yourprofile" target="_blank" class="btn btn-ghost">LinkedIn</a>
+      <a href="https://github.com/yourusername" target="_blank" class="btn btn-ghost">GitHub</a>
+    </div>
+  </section>
+
+  <!-- ─── Footer ───────────────────────────────────────── -->
+  <footer>
+    <p>© 2025 Egbo. Built with HTML, CSS & a love for clean data.</p>
+    <p style="font-family:var(--mono); font-size:0.72rem; color:var(--muted);">
+      <span style="color:var(--amber);">●</span> Available for hire
+    </p>
+  </footer>
+
+  <!-- ─── JS ───────────────────────────────────────────── -->
+  <script>
+    // Sticky nav
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
