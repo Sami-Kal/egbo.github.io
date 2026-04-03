@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Egbo — Data Analyst</title>
+  <title>Egbo Samson — Data Analyst</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -529,17 +529,22 @@
     </div>
 
     <div class="hero-right">
-      <div class="hero-grid-bg"></div>
-      <div class="hero-chart">
-        <!-- Animated SVG chart decoration -->
-        <svg viewBox="0 0 360 260" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Grid lines -->
-          <line x1="40" y1="20" x2="40" y2="220" stroke="#252525" stroke-width="1"/>
-          <line x1="40" y1="220" x2="340" y2="220" stroke="#252525" stroke-width="1"/>
-          <line x1="40" y1="170" x2="340" y2="170" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4 4"/>
-          <line x1="40" y1="120" x2="340" y2="120" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4 4"/>
-          <line x1="40" y1="70"  x2="340" y2="70"  stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4 4"/>
-
+  <div class="hero-grid-bg"></div>
+  <div class="hero-chart" style="position:relative; z-index:1;">
+    <img 
+      src="profile.jpg.jpeg" 
+      alt="Your Name"
+      style="
+        width: 320px;
+        height: 380px;
+        object-fit: cover;
+        object-position: top;
+        border: 1px solid #252525;
+        filter: grayscale(20%);
+      "
+    />
+  </div>
+</div>
           <!-- Bars -->
           <g style="transform-origin: bottom; animation: barGrow 0.6s 1.2s both;">
             <rect x="60"  y="140" width="30" height="80" fill="#3a2800" rx="1"/>
