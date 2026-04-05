@@ -532,17 +532,21 @@
   <div class="hero-grid-bg"></div>
   <div class="hero-chart" style="position:relative; z-index:1;">
     <img 
-      src="profile.jpg..jpeg" 
-      alt="Your Name"
-      style="
-        width: 320px;
-        height: 380px;
-        object-fit: cover;
-        object-position: top;
-        border: 1px solid #252525;
-        filter: grayscale(20%);
-      "
-    />
+  src="profile.jpg" 
+  alt="Your Name"
+  style="
+    width: 320px;
+    height: 380px;
+    object-fit: cover;
+    object-position: top;
+    border: 2px solid #f0a500;
+    box-shadow: 0 0 30px rgba(240, 165, 0, 0.4);
+    filter: grayscale(100%);
+    transition: filter 0.5s ease, transform 0.4s ease;
+  "
+  onmouseover="this.style.filter='grayscale(0%)'; this.style.transform='scale(1.05)'"
+  onmouseout="this.style.filter='grayscale(100%)'; this.style.transform='scale(1)'"
+/>
   </div>
 </div>
      
